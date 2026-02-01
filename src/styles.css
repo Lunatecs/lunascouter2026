@@ -29,8 +29,10 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .banner-inner{width:100%;max-width:1200px;padding:8px 18px;display:flex;gap:10px;align-items:center}
 .banner.red{background: var(--banner-red);}
 .banner.blue{background: var(--banner-blue);}
-.banner-btn{background:#ffffff;color:#000000;border:1px solid rgba(0,0,0,0.08);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
-.banner-btn.selected{background:#000000;color:#ffffff;border-color:rgba(255,255,255,0.06)}
+.banner-btn{background:#ffffff;color:#000000;border:1px solid rgba(0,0,0,0.1);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+.banner-btn.selected{background:#000000;color:#ffffff;border:2px solid #ffffff}
+.banner-btn.selected.is-red{background:var(--banner-red) !important;border-color:#ffffff !important}
+.banner-btn.selected.is-blue{background:var(--banner-blue) !important;border-color:#ffffff !important}
 
 /* Ensure app content isn't hidden under the fixed banner (also inline padding set in App.jsx) */
 .app-root { box-sizing: border-box }
@@ -41,7 +43,7 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 
 .panels{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;grid-auto-rows:1fr;min-height:calc(100vh - 160px)}
 
-/* When Settings contains only Add-team + Team List, make two equal columns */
+/* Settings panels - two columns layout */
 .panels.settings-two { grid-template-columns: 1fr 1fr; }
 .panel{background:linear-gradient(180deg,var(--card), #081722);border-radius:14px;padding:28px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.03);position:relative}
 .panel:hover{box-shadow:var(--shadow)}
@@ -53,11 +55,70 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .scouting-area{display:flex;flex-direction:column;gap:12px}
 
 /* Scouting inner grid */
-.scouting-grid{display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-top:12px}
+.scouting-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px}
 .module-title{font-size:20px;font-weight:700;color:var(--accent);margin-bottom:8px}
 .auto-panel, .teleop-panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));padding:12px;border-radius:10px}
 
-/* Make the Scouting full-width panel itself transparent so its inner containers sit on the page background */
+/* Scouting Area Header */
+.scouting-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
+}
+
+.scouting-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.scouting-controls {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-group label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  color: #ffffff !important;
+  margin-left: 2px;
+}
+
+.team-select {
+  min-width: 160px;
+  height: 40px !important;
+  padding: 0 16px !important;
+  border-radius: 20px !important;
+  font-size: 16px;
+  appearance: none;
+}
+
+.match-group {
+  width: 70px;
+}
+
+.match-input {
+  width: 100% !important;
+  height: 40px !important;
+  text-align: center;
+  padding: 0 !important;
+  border-radius: 20px !important;
+}
+
+/* Scouting Area Panel Override */
 .panel.scouting-area{background:transparent !important;border-left:none !important;padding:20px;border: none !important;box-shadow: none !important}
 .auto-content, .teleop-content{display:flex;flex-direction:column}
 .row{display:flex;align-items:center;justify-content:space-between}
@@ -66,7 +127,7 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .top-controls{min-height:110px}
 
 .level-buttons{display:flex;gap:10px;margin-top:10px}
-.level-button{min-width:56px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);font-weight:800;font-size:18px;cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.06)}
+.level-button{min-width:72px;padding:18px 22px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);font-weight:800;font-size:24px;cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.06)}
 .level-button.selected{background:linear-gradient(180deg, rgba(var(--accent-rgb),0.16), rgba(var(--accent-2-rgb),0.10));box-shadow:0 10px 20px rgba(var(--accent-2-rgb),0.06);color:var(--text)}
 
 .score-box{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));padding:8px 10px;border-radius:10px;gap:12px}
@@ -77,24 +138,23 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .score-display{min-width:88px;height:68px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:28px;font-weight:800;color:var(--text)}
 .score-display.large{min-width:120px;height:110px;font-size:56px}
 
-.next-button{width:72px;height:72px;border-radius:999px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 12px 30px rgba(var(--accent-2-rgb),0.08);cursor:pointer;font-weight:800;color:var(--text);display:flex;align-items:center;justify-content:center}
+.next-button{width:140px;height:100%;min-height:120px;border-radius:16px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 12px 30px rgba(var(--accent-2-rgb),0.08);cursor:pointer;font-weight:800;color:var(--text);display:flex;align-items:center;justify-content:center;font-size:24px}
 .next-button:hover{transform:none;box-shadow:0 12px 30px rgba(56,200,255,0.08)}
 
 .btn.small.selected{background:linear-gradient(180deg, rgba(var(--accent-rgb),0.14), rgba(var(--accent-2-rgb),0.08));border-color:rgba(var(--accent-2-rgb),0.08);color:var(--text)}
 
 /* Team select */
-.team-select{width:100%;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:12px 14px;border-radius:10px;color:#ffffff;font-size:16px;height:44px;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.04);appearance:none}
 .team-select option{background:var(--card);color:#ffffff}
 
 
-/* Add-team column */
-.add-team{display:flex;flex-direction:column;align-items:center}
-.add-team .input{display:block;width:90%;max-width:480px;padding:12px 14px;margin:10px 0;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);text-align:center}
+/* Add-team and Import-csv columns */
+.add-team, .import-csv{display:flex;flex-direction:column;align-items:center}
+.add-team .input, .import-csv .input{display:block;width:90%;max-width:480px;padding:12px 14px;margin:10px 0;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);text-align:center}
 .add-team .input::placeholder{color:rgba(169, 169, 169, 0.45)}
 .add-team .input:focus{outline:none}
 
 .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:var(--text);font-weight:700;cursor:pointer;box-shadow:0 10px 22px rgba(74,211,255,0.06)}
-.btn.small{padding:8px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));color:var(--muted);box-shadow:none;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-left:8px}
+.btn.small{padding:8px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));color:var(--muted);box-shadow:none;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-left:0}
 
 .small{color:var(--muted);margin-top:8px}
 
@@ -191,6 +251,27 @@ button:hover, button:active, button:focus, input:hover, input:active, input:focu
 /* ensure modal input uses same .input styles */
 .modal .input{margin:0}
 
+/* Modal buttons correction */
+.modal .btn {
+  margin: 0 !important;
+  padding: 14px 24px !important;
+  font-size: 16px !important;
+  min-width: 110px;
+  /* Primary Action (Submit/Close): White bg, Black text */
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ffffff !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+}
+.modal .btn.small {
+  /* Secondary Action (Cancel): Transparent bg, White border/text */
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.3) !important;
+  color: #ffffff !important;
+  opacity: 0.9 !important;
+}
+
 /* Force all textual content to white for maximum contrast */
 body, .app-root, .panel, .tab, .btn, .btn.small, .score-btn, .next-button, .team-list-box, .team-row, .team-name, .team-number, input, textarea, select, option, button, a, p, span, label, h1, h2, h3, h4, h5, h6 {
   color: #ffffff !important;
@@ -204,6 +285,11 @@ body, .app-root, .panel, .tab, .btn, .btn.small, .score-btn, .next-button, .team
   color: #ffffff !important;
   fill: #ffffff !important;    /* SVG fill */
   stroke: #ffffff !important;  /* SVG stroke */
+}
+
+/* Exception for QR Code to be visible on white background */
+.qr-container canvas {
+  background-color: #ffffff !important;
 }
 
 /* === Monochrome overwrite (high-specificity) ===
@@ -280,17 +366,33 @@ input, textarea, select, .team-select { background-image: none !important; backg
   color: #ffffff !important;
 }
 
+/* Larger buttons for Auto/Teleop specifically */
+.auto-panel .btn.small, .teleop-panel .btn.small {
+  padding: 14px 24px !important;
+  font-size: 16px !important;
+  min-width: 80px;
+}
+
 /* Auto & Scouting: use requested OKLCH color for module buttons and black text */
 .auto-panel .btn, .auto-panel .btn.small, .auto-panel .score-btn, .auto-panel .next-button, .auto-panel .level-button,
-.teleop-panel .btn, .teleop-panel .btn.small, .teleop-panel .score-btn, .teleop-panel .next-button, .teleop-panel .level-button {
+.teleop-panel .btn, .teleop-panel .btn.small, .teleop-panel .score-btn, .teleop-panel .next-button, .teleop-panel .level-button,
+.modal .level-button {
   background: oklch(70.4% 0.04 256.788) !important;
   color: #000000 !important;
   border: 1px solid rgba(0,0,0,0.12) !important;
   box-shadow: none !important;
 }
 
+/* Highlight Yes button when selected with a distinct green */
+.btn.small.yes-btn.selected {
+  background: #22c55e !important; /* Green-500 */
+  color: #ffffff !important;
+  border-color: #16a34a !important;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.4) !important;
+}
+
 /* Ensure selected/active state keeps same color and black text */
-.auto-panel .level-button.selected, .teleop-panel .level-button.selected,
+.auto-panel .level-button.selected, .teleop-panel .level-button.selected, .modal .level-button.selected,
 .auto-panel .btn.small.selected, .teleop-panel .btn.small.selected {
   background: oklch(70.4% 0.04 256.788) !important;
   color: #000000 !important;
@@ -299,7 +401,9 @@ input, textarea, select, .team-select { background-image: none !important; backg
 
 /* Make selected level in Auto visibly highlighted (clear indicator) */
 .auto-panel .level-button.selected,
-.auto-panel .level-button.selected:focus {
+.auto-panel .level-button.selected:focus,
+.modal .level-button.selected,
+.modal .level-button.selected:focus {
   /* use the same white outline used by other selected small buttons */
   outline: 2px solid #ffffff !important;
   box-shadow: 0 0 0 6px rgba(255,255,255,0.06) !important;
