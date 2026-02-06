@@ -6,11 +6,11 @@ import SetupPanel from './components/SetupPanel'
 import ScoutingForm from './components/ScoutingForm'
 import DataManager from './components/DataManager'
 import AllianceSelectionModal from './components/Modals/AllianceSelectionModal'
-import TeleopModal from './components/Modals/TeleopModal'
 import QRCodeModal from './components/Modals/QRCodeModal'
 import NextMatchModal from './components/Modals/NextMatchModal'
 import DeletePackageModal from './components/Modals/DeletePackageModal'
 import PackageCreatedModal from './components/Modals/PackageCreatedModal'
+import FieldSelectionModal from './components/Modals/FieldSelectionModal'
 
 export default function App() {
   // Persistence: Load initial state from localStorage synchronously
@@ -21,21 +21,27 @@ export default function App() {
     } catch (e) { return {} }
   })
 
-  const [theme] = useState(initialState.theme || 'blue')
   const [allianceSelection, setAllianceSelection] = useState(initialState.allianceSelection || initialState.bannerSelection || '')
+  const [scoutName, setScoutName] = useState(initialState.scoutName || '')
   const [teams, setTeams] = useState(initialState.teams || [])
   
   // Tabs
   const [active, setActive] = useState('setup')
 
   // Scouting State
-  const [matchNumber, setMatchNumber] = useState('')
-  const [autoLevel, setAutoLevel] = useState(0) // 0,1,2,3
-  const [movedFromStart, setMovedFromStart] = useState('no') // 'yes' | 'no'
-  const [autoScoredZeroFuel, setAutoScoredZeroFuel] = useState('no') // 'yes' | 'no'
-  const [teleopScoredZeroFuel, setTeleopScoredZeroFuel] = useState('no') // 'yes' | 'no'
-  const [defense, setDefense] = useState('no') // 'yes' | 'no'
-  const [needsAttention, setNeedsAttention] = useState('no') // 'yes' | 'no'
+  const [autoFuelCollected, setAutoFuelCollected] = useState(initialState.autoFuelCollected || 'None') // 'Center', 'Human', 'Depot'
+  const [autoPosition, setAutoPosition] = useState(initialState.autoPosition || '') // '1', '2', '3', '4'
+  const [matchNumber, setMatchNumber] = useState(initialState.matchNumber || '')
+  const [autoLevel, setAutoLevel] = useState(initialState.autoLevel || 0) // 0,1,2,3
+  const [teleopLevel, setTeleopLevel] = useState(initialState.teleopLevel || 0) // 0,1,2,3
+  const [teleopNote, setTeleopNote] = useState(initialState.teleopNote || '')
+  const [movedFromStart, setMovedFromStart] = useState(initialState.movedFromStart || false)
+  const [autoScoredZeroFuel, setAutoScoredZeroFuel] = useState(initialState.autoScoredZeroFuel || false)
+  const [teleopScoredZeroFuel, setTeleopScoredZeroFuel] = useState(initialState.teleopScoredZeroFuel || false)
+  const [defense, setDefense] = useState(initialState.defense || false)
+  const [needsAttention, setNeedsAttention] = useState(initialState.needsAttention || false)
+  const [brokeDown, setBrokeDown] = useState(initialState.brokeDown || false)
+  const [relayedFuel, setRelayedFuel] = useState(initialState.relayedFuel || false)
   const [selectedTeam, setSelectedTeam] = useState(initialState.selectedTeam ?? null)
   
   // Modals State
@@ -46,7 +52,7 @@ export default function App() {
   const [qrPayload, setQrPayload] = useState('')
   const [showPackageModal, setShowPackageModal] = useState(false)
   const [packageToDelete, setPackageToDelete] = useState(null)
-  const [showTeleopModal, setShowTeleopModal] = useState(false)
+  const [showFieldModal, setShowFieldModal] = useState(false)
 
   // Data State
   const [records, setRecords] = useState(initialState.records || []) 
@@ -70,7 +76,7 @@ export default function App() {
     const importedData = params.get('importedTeams')
     if (importedData) {
       try {
-        const decoded = JSON.parse(decodeURIComponent(importedData))
+        const decoded = JSON.parse(atob(importedData))
         if (Array.isArray(decoded) && decoded.length > 0) {
           if (window.confirm(`Found ${decoded.length} teams in URL. Do you want to IMPORT them? \n\nClick OK to Append to existing list, Cancel to Replace existing list.`)) {
              setTeams(prev => {
@@ -79,11 +85,21 @@ export default function App() {
                const count = newTeams.length
                if (count === 0) alert('All teams in link already exist.')
                else alert(`Imported ${count} new teams.`)
-               return [...prev, ...newTeams]
+               const combined = [...prev, ...newTeams]
+               return combined.sort((a, b) => {
+                   const numA = parseInt(a.number, 10) || 0;
+                   const numB = parseInt(b.number, 10) || 0;
+                   return numA - numB;
+               });
              })
           } else {
              if (window.confirm("Do you want to REPLACE your current team list with these teams? This cannot be undone.")) {
-                setTeams(decoded)
+                const sorted = decoded.sort((a, b) => {
+                    const numA = parseInt(a.number, 10) || 0;
+                    const numB = parseInt(b.number, 10) || 0;
+                    return numA - numB;
+                });
+                setTeams(sorted)
                 alert('Team list replaced.')
              }
           }
@@ -98,12 +114,31 @@ export default function App() {
   // Persistence Effects
   useEffect(() => {
     try {
-      const snapshot = { teams, records, allianceSelection, theme, selectedTeam }
+      const snapshot = { 
+        teams, 
+        records, 
+        allianceSelection, 
+        selectedTeam, 
+        scoutName,
+        matchNumber,
+        autoPosition,
+        autoFuelCollected,
+        autoLevel,
+        teleopLevel,
+        teleopNote,
+        movedFromStart,
+        autoScoredZeroFuel,
+        teleopScoredZeroFuel,
+        defense,
+        needsAttention,
+        brokeDown,
+        relayedFuel
+      }
       localStorage.setItem('luna_v2_state', JSON.stringify(snapshot))
     } catch (err) {
       console.warn('Failed to save state', err)
     }
-  }, [teams, records, allianceSelection, theme, selectedTeam])
+  }, [teams, records, allianceSelection, selectedTeam, scoutName])
 
   useEffect(() => {
     try {
@@ -124,7 +159,7 @@ export default function App() {
     if (rawPayload.length > 2000) {
       if (!window.confirm('Team list is large. The QR code might be dense. Continue?')) return
     }
-    const payload = encodeURIComponent(rawPayload)
+    const payload = encodeURIComponent(btoa(rawPayload))
     setQrPayload(payload)
     setQrBaseUrl(`${window.location.origin}${window.location.pathname}`)
     setShowQRModal(true)
@@ -146,7 +181,7 @@ export default function App() {
     })
   }
 
-  const handleTeleopSubmit = ({ level, comments }) => {
+  const handleTeleopSubmit = () => {
     // Validate team selection first
     if (selectedTeam === null || selectedTeam === '') {
         alert('Please select a team before submitting.');
@@ -157,21 +192,32 @@ export default function App() {
         return
     }
 
+    const teamObj = teams[Number(selectedTeam)] || {}
+    
     const rec = {
-      teamIndex: Number(selectedTeam),
-      matchNumber: matchNumber || '',
-      autoLevel,
-      teleopLevel: level,
-      teleopNote: comments,
-      movedFromStart,
-      autoScoredZeroFuel,
-      teleopScoredZeroFuel,
-      defense,
-      needsAttention,
+      // Top level fields
+      team: teamObj.number || '0000',
+      matchNumber: parseInt(matchNumber, 10) || 0,
+      position: allianceSelection, // e.g. "Red 1"
+      scoutName: scoutName || '',
+      timestamp: Date.now(),
       discarded: false,
-      bannerColor: allianceSelection.startsWith('Red') ? 'red' : allianceSelection.startsWith('Blue') ? 'blue' : '',
-      themeAtSave: theme,
-      timestamp: Date.now()
+      
+      // Values object
+      values: {
+        autoLevel,
+        autoPosition,
+        autoFuelCollected,
+        teleopLevel,
+        teleopNote,
+        movedFromStart,
+        autoScoredZeroFuel,
+        teleopScoredZeroFuel,
+        defense,
+        needsAttention,
+        brokeDown,
+        relayedFuel
+      }
     }
     setRecords(prev => [...prev, rec])
 
@@ -182,16 +228,21 @@ export default function App() {
         return isNaN(num) ? prev : String(num + 1)
     })
     setAutoLevel(0)
-    setMovedFromStart('no')
-    setAutoScoredZeroFuel('no')
-    setTeleopScoredZeroFuel('no')
-    setDefense('no')
-    setNeedsAttention('no')
+    setAutoPosition('')
+    setAutoFuelCollected('None')
+    setTeleopLevel(0)
+    setTeleopNote('')
+    setMovedFromStart(false)
+    setAutoScoredZeroFuel(false)
+    setTeleopScoredZeroFuel(false)
+    setDefense(false)
+    setNeedsAttention(false)
+    setBrokeDown(false)
+    setRelayedFuel(false)
     
     // Prepare for next match
     setSelectedTeam('')
     setShowNextMatchModal(true)
-    setShowTeleopModal(false)
   }
 
   const createPackage = () => {
@@ -219,6 +270,17 @@ export default function App() {
 
   const exportArchiveJSON = (session) => {
     const payload = session.data.map(r => {
+      // Handle new schema
+      if (r.values) {
+        // Find team name if possible
+        const teamObj = teams.find(t => t.number === r.team) || {}
+        return {
+          ...r,
+          teamName: teamObj.name || 'Unnamed'
+        }
+      }
+      
+      // Handle old schema
       const team = teams[r.teamIndex] || {}
       return {
         ...r,
@@ -252,7 +314,7 @@ export default function App() {
       </div>
       <div className={`viewport-outline ${allianceSelection.startsWith('Red') ? 'red' : allianceSelection.startsWith('Blue') ? 'blue' : ''}`} />
       
-      <div className={`app-root theme-${theme}`} style={{paddingTop:64}}>
+      <div className={`app-root`} style={{paddingTop:48}}>
         <div className="tabs">
           <div className={`tab ${active === 'setup' ? 'active' : ''}`} onClick={() => setActive('setup')}>Setup</div>
           <div className={`tab ${active === 'scout' ? 'active' : ''}`} onClick={() => setActive('scout')}>Scout</div>
@@ -267,6 +329,8 @@ export default function App() {
               setSelectedTeam={setSelectedTeam}
               matchNumber={matchNumber}
               setMatchNumber={setMatchNumber}
+              scoutName={scoutName}
+              setScoutName={setScoutName}
               movedFromStart={movedFromStart}
               setMovedFromStart={setMovedFromStart}
               autoScoredZeroFuel={autoScoredZeroFuel}
@@ -279,7 +343,20 @@ export default function App() {
               setDefense={setDefense}
               needsAttention={needsAttention}
               setNeedsAttention={setNeedsAttention}
-              onOpenTeleopModal={() => setShowTeleopModal(true)}
+              brokeDown={brokeDown}
+              setBrokeDown={setBrokeDown}
+              relayedFuel={relayedFuel}
+              setRelayedFuel={setRelayedFuel}
+              autoPosition={autoPosition}
+              setAutoPosition={setAutoPosition}
+              autoFuelCollected={autoFuelCollected}
+              setAutoFuelCollected={setAutoFuelCollected}
+              onOpenFieldModal={() => setShowFieldModal(true)}
+              teleopLevel={teleopLevel}
+              setTeleopLevel={setTeleopLevel}
+              teleopNote={teleopNote}
+              setTeleopNote={setTeleopNote}
+              onSubmit={handleTeleopSubmit}
             />
           )}
 
@@ -309,12 +386,6 @@ export default function App() {
         </div>
 
         {/* Modals */}
-        <TeleopModal 
-            show={showTeleopModal} 
-            onCancel={() => setShowTeleopModal(false)}
-            onSubmit={handleTeleopSubmit}
-        />
-        
         <QRCodeModal 
             show={showQRModal} 
             onClose={() => setShowQRModal(false)}
@@ -346,6 +417,13 @@ export default function App() {
         <AllianceSelectionModal 
             show={showAllianceModal} 
             onSelect={handleAllianceSelect} 
+        />
+
+        <FieldSelectionModal
+            show={showFieldModal}
+            onClose={() => setShowFieldModal(false)}
+            onSelect={setAutoPosition}
+            selectedPos={autoPosition}
         />
       </div>
     </>

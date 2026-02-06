@@ -28,9 +28,44 @@ export default function DataManager({
         ) : (
           <div style={{display:'grid',gap:12}}>
             {[...records].reverse().map((r, idx) => {
-              const team = teams[r.teamIndex] || { name: 'Unknown Team', number: '-' }
-              const color = r.bannerColor === 'red' ? '#fa1818' : r.bannerColor === 'blue' ? '#1e74ff' : '#9aa0a6'
-              const isDiscarded = r.discarded === true
+              // Schema Compatibility Layer
+              const isNewSchema = !!r.values;
+              const values = isNewSchema ? r.values : r;
+              
+              let teamName = 'Unknown Team';
+              let teamNumber = '-';
+              
+              if (isNewSchema) {
+                const t = teams.find(team => team.number === r.team);
+                if (t) teamName = t.name;
+                teamNumber = r.team;
+              } else {
+                const t = teams[r.teamIndex];
+                if (t) {
+                   teamName = t.name;
+                   teamNumber = t.number;
+                }
+              }
+
+              let color = '#9aa0a6';
+              if (isNewSchema) {
+                  if (r.position && r.position.startsWith('Red')) color = '#fa1818';
+                  else if (r.position && r.position.startsWith('Blue')) color = '#1e74ff';
+              } else {
+                  if (r.bannerColor === 'red') color = '#fa1818';
+                  else if (r.bannerColor === 'blue') color = '#1e74ff';
+              }
+
+              const isDiscarded = r.discarded === true || (r.values && r.values.discarded === true)
+              
+              const formatBool = (val) => {
+                  if (val === true) return 'Yes'
+                  if (val === false) return 'No'
+                  if (val === 'yes') return 'Yes'
+                  if (val === 'no') return 'No'
+                  return '-'
+              }
+
               return (
                 <div key={idx} className="record-row" style={{
                     display:'flex',
@@ -45,22 +80,23 @@ export default function DataManager({
                 }}>
                   <div style={{display:'flex',gap:16,alignItems:'flex-start',flex:1}}>
                     <div style={{display:'flex',flexDirection:'column',minWidth:140}}>
-                      <div style={{fontWeight:700,fontSize:16}}>{team.name}</div>
-                      <div style={{color:'var(--muted)',fontSize:14}}>Team {team.number}</div>
+                      <div style={{fontWeight:700,fontSize:16}}>{teamName}</div>
+                      <div style={{color:'var(--muted)',fontSize:14}}>Team {teamNumber}</div>
                       <div style={{marginTop:8,fontWeight:700}}>Match {r.matchNumber || '-'}</div>
-                      {r.needsAttention === 'yes' && <div style={{color:'orange', fontWeight:'bold', marginTop:4}}>Needs Attention</div>}
+                      <div style={{color:'var(--muted)',fontSize:13}}>Scout: {r.scoutName || 'Unknown'}</div>
+                      {(values.needsAttention === 'yes' || values.needsAttention === true) && <div style={{color:'orange', fontWeight:'bold', marginTop:4}}>Needs Attention</div>}
                     </div>
                     <div style={{display:'flex',flexDirection:'column',gap:4,minWidth:120}}>
                       <div style={{fontWeight:700,fontSize:12,textTransform:'uppercase',opacity:0.6}}>Scores</div>
-                      <div style={{fontSize:14}}>Auto Level: {r.autoLevel}</div>
-                      <div style={{fontSize:14}}>Teleop Level: {r.teleopLevel}</div>
+                      <div style={{fontSize:14}}>Auto Level: {values.autoLevel}</div>
+                      <div style={{fontSize:14}}>Teleop Level: {values.teleopLevel}</div>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',gap:4}}>
                       <div style={{fontWeight:700,fontSize:12,textTransform:'uppercase',opacity:0.6}}>Details</div>
-                      <div style={{fontSize:13,color:'var(--muted)'}}>Defense: {r.defense || '-'}</div>
-                      <div style={{fontSize:13,color:'var(--muted)'}}>Moved: {r.movedFromStart || '-'}</div>
-                      <div style={{fontSize:13,color:'var(--muted)'}}>Auto Zero: {r.autoScoredZeroFuel || '-'}</div>
-                      <div style={{fontSize:13,color:'var(--muted)'}}>Teleop Zero: {r.teleopScoredZeroFuel || '-'}</div>
+                      <div style={{fontSize:13,color:'var(--muted)'}}>Defense: {formatBool(values.defense)}</div>
+                      <div style={{fontSize:13,color:'var(--muted)'}}>Moved: {formatBool(values.movedFromStart)}</div>
+                      <div style={{fontSize:13,color:'var(--muted)'}}>Auto Zero: {formatBool(values.autoScoredZeroFuel)}</div>
+                      <div style={{fontSize:13,color:'var(--muted)'}}>Teleop Zero: {formatBool(values.teleopScoredZeroFuel)}</div>
                     </div>
                   </div>
                   <div style={{flex:1,marginLeft:20}}>
@@ -80,7 +116,12 @@ export default function DataManager({
                             e.stopPropagation()
                             const realIndex = records.length - 1 - idx
                             const newRecords = [...records]
-                            newRecords[realIndex].teleopNote = editingNoteContent
+                            // Handle Schema
+                            if (newRecords[realIndex].values) {
+                                newRecords[realIndex].values.teleopNote = editingNoteContent
+                            } else {
+                                newRecords[realIndex].teleopNote = editingNoteContent
+                            }
                             setRecords(newRecords)
                             setEditingNoteIndex(null)
                           }}>Save</button>
@@ -96,11 +137,11 @@ export default function DataManager({
                         onClick={() => {
                           const realIndex = records.length - 1 - idx
                           setEditingNoteIndex(realIndex)
-                          setEditingNoteContent(r.teleopNote || '')
+                          setEditingNoteContent(values.teleopNote || '')
                         }}
                         title="Click to edit note"
                       >
-                        {r.teleopNote || <span style={{opacity:0.5, fontStyle:'italic'}}>No notes added. Click to edit.</span>}
+                        {values.teleopNote || <span style={{opacity:0.5, fontStyle:'italic'}}>No notes added. Click to edit.</span>}
                       </div>
                     )}
                     <div style={{marginTop:12,fontSize:11,opacity:0.4}}>Saved: {new Date(r.timestamp).toLocaleString()}</div>
@@ -110,7 +151,17 @@ export default function DataManager({
                         onClick={() => {
                             const newRecords = [...records]
                             const realIndex = records.length - 1 - idx
-                            newRecords[realIndex].discarded = !newRecords[realIndex].discarded
+                            
+                            // Toggle at top level for new structure preference
+                            // We need to ensure we don't duplicate state if it's in values
+                            if (newRecords[realIndex].discarded === undefined && newRecords[realIndex].values && newRecords[realIndex].values.discarded !== undefined) {
+                                // Migrate to top level on toggle
+                                newRecords[realIndex].discarded = !newRecords[realIndex].values.discarded
+                                delete newRecords[realIndex].values.discarded
+                            } else {
+                                newRecords[realIndex].discarded = !isDiscarded
+                            }
+                            
                             setRecords(newRecords)
                         }}
                     >

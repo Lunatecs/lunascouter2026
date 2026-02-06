@@ -5,7 +5,7 @@ export default function SetupPanel({
   teams, 
   setTeams, 
   allianceSelection, 
-  setAllianceSelection, 
+  setAllianceSelection,
   onShare, 
   onDeleteTeam 
 }) {
@@ -17,7 +17,14 @@ export default function SetupPanel({
     const n = name.trim()
     const num = number.trim()
     if (!n && !num) return
-    setTeams(prev => [...prev, { name: n || 'Unnamed', number: num || '-' }])
+    setTeams(prev => {
+        const newTeams = [...prev, { name: n || 'Unnamed', number: num || '-' }]
+        return newTeams.sort((a, b) => {
+            const numA = parseInt(a.number, 10) || 0;
+            const numB = parseInt(b.number, 10) || 0;
+            return numA - numB;
+        });
+    })
     setName('')
     setNumber('')
   }
@@ -42,7 +49,14 @@ export default function SetupPanel({
             name: (r[nameIdx] || r[0] || 'Unnamed').trim(),
             number: String((r[numberIdx] || r[1] || '-')).trim()
           }))
-          setTeams(prev => [...prev, ...list])
+          setTeams(prev => {
+            const combined = [...prev, ...list]
+            return combined.sort((a, b) => {
+                const numA = parseInt(a.number, 10) || 0;
+                const numB = parseInt(b.number, 10) || 0;
+                return numA - numB;
+            });
+          })
         } else {
           const parsed = JSON.parse(txt)
           let list = []
@@ -51,7 +65,14 @@ export default function SetupPanel({
           else if (parsed.data && Array.isArray(parsed.data)) list = parsed.data
           else { alert('JSON must be an array of teams or an object with a `teams` array'); return }
           const normalized = list.map(t => ({ name: (t.name || t.team || 'Unnamed'), number: String(t.number ?? t.num ?? t.teamNumber ?? '-') }))
-          setTeams(prev => [...prev, ...normalized])
+          setTeams(prev => {
+            const combined = [...prev, ...normalized]
+            return combined.sort((a, b) => {
+                const numA = parseInt(a.number, 10) || 0;
+                const numB = parseInt(b.number, 10) || 0;
+                return numA - numB;
+            });
+          })
         }
       } catch (err) {
         alert('Failed to import file: ' + err.message)

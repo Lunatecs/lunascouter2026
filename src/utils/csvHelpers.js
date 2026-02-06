@@ -27,17 +27,60 @@ export const parseCSV = (text) => {
 
 export const toCSV = (arr, teams) => {
   if (!arr || arr.length === 0) return ''
-  const keys = ['teamIndex','teamName','teamNumber','matchNumber','autoLevel','teleopLevel','teleopNote','movedFromStart','autoScoredZeroFuel','teleopScoredZeroFuel','defense','needsAttention','discarded','bannerColor','timestamp']
+  
+  // Define headers for the new schema
+  // We'll keep the output flat for CSV compatibility
+  const valueKeys = [
+    'autoLevel',
+    'autoPosition',
+    'autoFuelCollected',
+    'teleopLevel',
+    'teleopNote',
+    'movedFromStart',
+    'autoScoredZeroFuel',
+    'teleopScoredZeroFuel',
+    'defense',
+    'needsAttention',
+    'brokeDown',
+    'relayedFuel',
+    'discarded'
+  ]
+  
+  const headers = ['team', 'matchNumber', 'position', 'scoutName', 'timestamp', ...valueKeys]
   const escape = (v) => '"' + String(v ?? '').replace(/"/g,'""') + '"'
-  const header = keys.join(',')
+  const headerRow = headers.join(',')
+
   const rows = arr.map(r => {
-    const team = teams[r.teamIndex] || {}
-    const rowData = {
-      ...r,
-      teamName: team.name || 'Unnamed',
-      teamNumber: team.number || '-'
+    // Handle both new and old schema
+    let rowData = {}
+    
+    if (r.values) {
+      // New Schema
+      rowData = {
+        team: r.team, // stored as number/string
+        matchNumber: r.matchNumber,
+        position: r.position,
+        scoutName: r.scoutName,
+        timestamp: r.timestamp,
+        ...r.values,
+        // Overwrite/Ensure top level fields if they exist there
+        discarded: r.discarded ?? r.values.discarded
+      }
+    } else {
+      // Old Schema fallback
+      const team = teams[r.teamIndex] || {}
+      rowData = {
+        team: team.number || '-',
+        matchNumber: r.matchNumber,
+        position: r.bannerColor ? (r.bannerColor === 'red' ? 'Red' : 'Blue') : '', // Approximation
+        timestamp: r.timestamp,
+        // Spread the rest of the flat properties
+        ...r
+      }
     }
-    return keys.map(k => escape(rowData[k])).join(',')
+
+    return headers.map(k => escape(rowData[k])).join(',')
   })
-  return [header, ...rows].join('\n')
+  
+  return [headerRow, ...rows].join('\n')
 }
