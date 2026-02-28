@@ -10,7 +10,7 @@ export default function FieldSelectionModal({ show, onClose, onSelect, selectedP
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%' }}>
         <h3 style={{ marginTop: 0 }}>Select Starting Position</h3>
         <div className="field-container" style={{ position: 'relative', width: '100%', aspectRatio: '3/2', overflow: 'hidden', borderRadius: '8px', background: '#222' }}>
-          <img src="/field.png" alt="Field Map" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+          <img src="field.png" alt="Field Map" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
           
           <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
             {positions.map(pos => (
