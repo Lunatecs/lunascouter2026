@@ -40,28 +40,31 @@ export default function App() {
   useEffect(() => {
     if (needRefresh) {
       toast.info(
-        <div>
-          <span>New content available, click on reload button to update.</span>
-          <br />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <span style={{ fontSize: '14px', marginBottom: '8px' }}>New version available!</span>
           <button
             onClick={() => updateServiceWorker(true)}
             style={{
-              marginTop: 8,
-              padding: "4px 8px",
+              padding: "6px 12px",
               background: "#4CAF50",
               color: "white",
               border: "none",
-              borderRadius: 4,
+              borderRadius: "4px",
               cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "12px",
+              alignSelf: "flex-end",
+              marginTop: "8px"
             }}
           >
-            Reload
+            Update Now
           </button>
         </div>,
         {
           autoClose: false,
           closeOnClick: false,
           onClose: () => setNeedRefresh(false),
+          icon: false // Remove default icon to save space if desired
         }
       );
     }
@@ -359,7 +362,7 @@ export default function App() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer theme="dark" position="bottom-right" />
       <div className={`banner ${allianceSelection.startsWith('Red') ? 'red' : allianceSelection.startsWith('Blue') ? 'blue' : ''}`}>
         <div className="banner-inner" style={{ justifyContent: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: '1.5em', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>

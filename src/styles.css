@@ -336,6 +336,7 @@ body, .app-root, .panel, .tab, .btn, .btn.small, .score-btn, .next-button, .team
   background-color: #ffffff !important;
 }
 
+
 /* === Monochrome overwrite (high-specificity) ===
    Remove gradients, shadows, colored borders; enforce black/gray/white theme
 */
@@ -374,7 +375,7 @@ input, textarea, select, .team-select { background: #0f0f0f !important; color: #
 .panel{border-left:0 !important}
 
 /* ensure focus states don't reintroduce colors */
-*:focus { outline: none !important; box-shadow: none !important }
+*:focus { outline: none !important; box-shadow: none !important; }
 
 /* final safety: remove background images on pseudo elements */
 *::before, *::after { background-image: none !important }
@@ -508,4 +509,3 @@ input:focus, textarea:focus, select:focus, .input:focus, .team-select:focus {
 .banner .banner-btn.selected {
   color: #ffffff !important;
 }
-
