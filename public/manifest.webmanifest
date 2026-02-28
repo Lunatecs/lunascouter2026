@@ -1,0 +1,16 @@
+{
+  "name": "LUNASCOUTER 2026",
+  "short_name": "Scouting 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/LunaScouter-LogoV2.png",
+      "sizes": "512x512 192x192 128x128 64x64 32x32 24x24 16x16",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
