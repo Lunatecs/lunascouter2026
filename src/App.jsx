@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { useRegisterSW } from 'virtual:pwa-register/react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { toCSV } from './utils/csvHelpers'
 
 // Components
@@ -13,6 +16,57 @@ import PackageCreatedModal from './components/Modals/PackageCreatedModal'
 import FieldSelectionModal from './components/Modals/FieldSelectionModal'
 
 export default function App() {
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      // eslint-disable-next-line no-console
+      console.log('SW Registered: ' + r)
+    },
+    onRegisterError(error) {
+      console.log('SW registration error', error)
+    },
+  })
+
+  useEffect(() => {
+    if (offlineReady) {
+      toast.success("App is ready to work offline");
+      setOfflineReady(false);
+    }
+  }, [offlineReady]);
+
+  useEffect(() => {
+    if (needRefresh) {
+      toast.info(
+        <div>
+          <span>New content available, click on reload button to update.</span>
+          <br />
+          <button
+            onClick={() => updateServiceWorker(true)}
+            style={{
+              marginTop: 8,
+              padding: "4px 8px",
+              background: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            Reload
+          </button>
+        </div>,
+        {
+          autoClose: false,
+          closeOnClick: false,
+          onClose: () => setNeedRefresh(false),
+        }
+      );
+    }
+  }, [needRefresh]);
+
   // Persistence: Load initial state from localStorage synchronously
   const [initialState] = useState(() => {
     try {
@@ -305,6 +359,7 @@ export default function App() {
 
   return (
     <>
+      <ToastContainer />
       <div className={`banner ${allianceSelection.startsWith('Red') ? 'red' : allianceSelection.startsWith('Blue') ? 'blue' : ''}`}>
         <div className="banner-inner" style={{ justifyContent: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: '1.5em', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>

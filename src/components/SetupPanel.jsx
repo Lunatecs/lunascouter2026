@@ -150,6 +150,33 @@ export default function SetupPanel({
                 ))}
             </div>
             </section>
+
+            <section className="panel app-maintenance">
+            <h2>App Maintenance</h2>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+                <button 
+                  className="btn" 
+                  onClick={() => {
+                    if (window.confirm('This will refresh the app and clear stored version data. Continue?')) {
+                      if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(registrations => {
+                          for (const registration of registrations) {
+                            registration.unregister()
+                          }
+                        })
+                      }
+                      window.location.reload(true)
+                    }
+                  }}
+                  style={{background:'var(--banner-red)', borderColor:'rgba(255,255,255,0.2)'}}
+                >
+                  Force Update / Clear Cache
+                </button>
+                <div style={{fontSize:12, opacity:0.6, textAlign:'center'}}>
+                  Use this if you are not seeing the latest updates.
+                </div>
+            </div>
+            </section>
         </div>
 
         <section className={`panel team-list`}>
