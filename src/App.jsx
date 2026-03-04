@@ -11,7 +11,6 @@ import ScoutingForm from './components/ScoutingForm'
 import DataManager from './components/DataManager'
 import AllianceSelectionModal from './components/Modals/AllianceSelectionModal'
 import QRCodeModal from './components/Modals/QRCodeModal'
-import NextMatchModal from './components/Modals/NextMatchModal'
 import DeletePackageModal from './components/Modals/DeletePackageModal'
 import PackageCreatedModal from './components/Modals/PackageCreatedModal'
 import FieldSelectionModal from './components/Modals/FieldSelectionModal'
@@ -107,7 +106,6 @@ export default function App() {
   // Modals State
   const [showAllianceModal, setShowAllianceModal] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
-  const [showNextMatchModal, setShowNextMatchModal] = useState(false)
   const [qrBaseUrl, setQrBaseUrl] = useState('')
   const [qrPayload, setQrPayload] = useState('')
   const [showPackageModal, setShowPackageModal] = useState(false)
@@ -245,12 +243,12 @@ export default function App() {
   const handleTeleopSubmit = () => {
     // Validate team selection first
     if (selectedTeam === null || selectedTeam === '') {
-        alert('Please select a team before submitting.');
+        toast.error('Please select a team before submitting.');
         return;
     }
     if (!matchNumber) {
-        alert('Please enter a match number.')
-        return
+        toast.error('Please enter a match number.');
+        return;
     }
 
     const teamObj = teams[Number(selectedTeam)] || {}
@@ -303,8 +301,8 @@ export default function App() {
     
     // Prepare for next match
     setSelectedTeam('')
-    setShowNextMatchModal(true)
     trigger('success')
+    toast.success(`Match ${rec.matchNumber} submitted!`)
   }
 
   const createPackage = () => {
@@ -456,16 +454,6 @@ export default function App() {
             onClose={() => setShowQRModal(false)}
             payload={qrPayload}
             initialBaseUrl={qrBaseUrl}
-        />
-
-        <NextMatchModal 
-            show={showNextMatchModal} 
-            onClose={() => setShowNextMatchModal(false)}
-            matchNumber={matchNumber}
-            setMatchNumber={setMatchNumber}
-            selectedTeam={selectedTeam}
-            setSelectedTeam={setSelectedTeam}
-            teams={teams}
         />
 
         <DeletePackageModal 

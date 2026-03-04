@@ -60,7 +60,7 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .app-root{max-width:1200px;margin:8px auto;padding:4px 22px;min-height:60vh;padding-bottom: 80px;}
 
 /* Top banner strip */
-.banner{position:fixed;left:0;right:0;top:0;height:48px;display:flex;align-items:center;justify-content:center;z-index:1200;background:transparent}
+.banner{position:fixed;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:center;z-index:1200;background:transparent}
 .banner-inner{width:100%;max-width:1200px;padding:4px 18px;display:flex;gap:10px;align-items:center}
 .banner.red{background: var(--banner-red);}
 .banner.blue{background: var(--banner-blue);}
@@ -72,9 +72,8 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 /* Ensure app content isn't hidden under the fixed banner (also inline padding set in App.jsx) */
 .app-root { box-sizing: border-box }
 .tabs{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;padding:0 0 16px;align-items:stretch}
-.tab{display:flex;align-items:center;justify-content:center;min-width:110px;padding:14px 16px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:var(--muted);font-weight:700;cursor:pointer}
-.tab:hover{color:var(--muted);box-shadow:none}
-.tab.active{color:var(--text);background:linear-gradient(180deg, rgba(var(--accent-rgb),0.06), rgba(var(--accent-2-rgb),0.04));box-shadow:0 18px 44px rgba(var(--accent-2-rgb),0.08);border-bottom:4px solid var(--accent)}
+.tab{display:flex;align-items:center;justify-content:center;min-width:110px;padding:14px 16px;border-radius:14px;background:var(--module-gray);color:var(--text-white);font-weight:700;cursor:pointer}
+.tab.active{background:oklch(35% 0.041 260.031);border-radius:14px 14px 0 0}
 
 .panels{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;grid-auto-rows:1fr;min-height:calc(100vh - 160px)}
 
@@ -227,7 +226,6 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 .btn.small:hover,
 .score-btn:hover,
 .next-button:hover,
-.tab:hover,
 .level-button:hover,
 .delete-btn:hover,
 .team-select:hover,
@@ -246,14 +244,13 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 }
 
 /* Strong override to ensure hover/active/focus do not change visuals */
-.btn, .btn.small, .score-btn, .next-button, .tab, .level-button, .delete-btn, .team-select {
+.btn, .btn.small, .score-btn, .next-button, .level-button, .delete-btn, .team-select {
   transition: none !important;
 }
 .btn:hover, .btn:active, .btn:focus,
 .btn.small:hover, .btn.small:active, .btn.small:focus,
 .score-btn:hover, .score-btn:active, .score-btn:focus,
 .next-button:hover, .next-button:active, .next-button:focus,
-.tab:hover, .tab:active, .tab:focus,
 .level-button:hover, .level-button:active, .level-button:focus,
 .delete-btn:hover, .delete-btn:active, .delete-btn:focus,
 .team-select:hover, .team-select:active, .team-select:focus {
@@ -273,7 +270,7 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 button:hover, button:active, button:focus {transform:none !important;box-shadow:none !important;background:none !important;color:inherit !important}
 
 /* Final safety: ensure native inputs/links/buttons do not change on hover/active/focus */
-button, input, select, textarea, a, .btn, .score-btn, .next-button, .tab, .level-button, .delete-btn, .team-select {
+button, input, select, textarea, a, .btn, .score-btn, .next-button, .level-button, .delete-btn, .team-select {
   transition: none !important;
   will-change: auto !important;
 }
@@ -388,6 +385,22 @@ input, textarea, select, .team-select { background: #0f0f0f !important; color: #
   background: var(--module-gray) !important;
 }
 
+/* Tab specific overrides: No hover, active state highlights */
+.tab {
+  transition: none !important;
+}
+.tab:hover, .tab:active, .tab:focus {
+  background: var(--module-gray) !important;
+}
+.tab.active {
+  background: oklch(35% 0.041 260.031) !important; /* Lighter gray */
+  border-radius: 14px 14px 0 0 !important;
+  border-bottom: none !important;
+}
+.tab.active:hover, .tab.active:active, .tab.active:focus {
+  background: oklch(35% 0.041 260.031) !important;
+}
+
 /* Buttons: ensure no gradients anywhere */
 .btn, .btn.small, .score-btn, .next-button, .level-button, .level-button.selected {
   background-image: none !important;
@@ -486,7 +499,7 @@ input:focus, textarea:focus, select:focus, .input:focus, .team-select:focus {
   inset: 0; /* top/right/bottom/left: 0 */
   pointer-events: none; /* don't block clicks */
   box-sizing: border-box;
-  border: 10px solid transparent; /* thickness visible */
+  border: 5px solid transparent; /* thickness visible */
   z-index: 1300; /* above banner (1200) */
 }
 .viewport-outline.red {
