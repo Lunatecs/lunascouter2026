@@ -12,7 +12,8 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "web-haptics": "^0.0.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useWebHaptics } from 'web-haptics/react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { toCSV } from './utils/csvHelpers'
@@ -16,6 +17,7 @@ import PackageCreatedModal from './components/Modals/PackageCreatedModal'
 import FieldSelectionModal from './components/Modals/FieldSelectionModal'
 
 export default function App() {
+  const { trigger } = useWebHaptics();
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -236,6 +238,7 @@ export default function App() {
       if (si > index) return String(si - 1)
       return String(si)
     })
+    trigger('warning')
   }
 
   const handleTeleopSubmit = () => {
@@ -300,6 +303,7 @@ export default function App() {
     // Prepare for next match
     setSelectedTeam('')
     setShowNextMatchModal(true)
+    trigger('success')
   }
 
   const createPackage = () => {
@@ -314,6 +318,7 @@ export default function App() {
     setArchives(prev => [session, ...prev])
     setRecords([])
     setShowPackageModal(true)
+    trigger('success')
   }
 
   const deleteArchiveSession = (id) => {
@@ -374,9 +379,9 @@ export default function App() {
       
       <div className={`app-root`} style={{paddingTop:48}}>
         <div className="tabs">
-          <div className={`tab ${active === 'setup' ? 'active' : ''}`} onClick={() => setActive('setup')}>Setup</div>
-          <div className={`tab ${active === 'scout' ? 'active' : ''}`} onClick={() => setActive('scout')}>Scout</div>
-          <div className={`tab ${active === 'sync' ? 'active' : ''}`} onClick={() => setActive('sync')}>Packages</div>
+          <div className={`tab ${active === 'setup' ? 'active' : ''}`} onClick={() => { setActive('setup'); trigger('selection'); }}>Setup</div>
+          <div className={`tab ${active === 'scout' ? 'active' : ''}`} onClick={() => { setActive('scout'); trigger('selection'); }}>Scout</div>
+          <div className={`tab ${active === 'sync' ? 'active' : ''}`} onClick={() => { setActive('sync'); trigger('selection'); }}>Packages</div>
         </div>
 
         <div className={`panels ${active === 'setup' ? 'settings-two' : ''}`}>
