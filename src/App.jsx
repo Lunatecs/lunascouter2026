@@ -17,7 +17,8 @@ import PackageCreatedModal from './components/Modals/PackageCreatedModal'
 import FieldSelectionModal from './components/Modals/FieldSelectionModal'
 
 export default function App() {
-  const { trigger } = useWebHaptics();
+  const { trigger } = useWebHaptics({ debug: true });
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -420,6 +421,7 @@ export default function App() {
               teleopNote={teleopNote}
               setTeleopNote={setTeleopNote}
               onSubmit={handleTeleopSubmit}
+              trigger={trigger}
             />
           )}
 

@@ -1,5 +1,4 @@
 import React from 'react'
-import { useWebHaptics } from 'web-haptics/react'
 
 export default function ScoutingForm({
   teams,
@@ -34,10 +33,9 @@ export default function ScoutingForm({
   setTeleopNote,
   onSubmit,
   scoutName,
-  setScoutName
+  setScoutName,
+  trigger
 }) {
-  const { trigger } = useWebHaptics();
-
   return (
     <section className={`panel full scouting-area`}>
       <div className="scouting-header">
