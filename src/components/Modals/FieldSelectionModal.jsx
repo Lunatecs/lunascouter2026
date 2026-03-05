@@ -3,7 +3,7 @@ import React from 'react'
 export default function FieldSelectionModal({ show, onClose, onSelect, selectedPos, trigger }) {
   if (!show) return null
 
-  const positions = ['1', '2', '3', '4']
+  const positions = [1, 2, 3, 4]
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -23,7 +23,7 @@ export default function FieldSelectionModal({ show, onClose, onSelect, selectedP
                 }}
                 style={{
                   flex: 1,
-                  borderRight: pos !== '4' ? '2px dashed rgba(0,0,0,0.5)' : 'none',
+                  borderRight: pos !== 4 ? '2px dashed rgba(0,0,0,0.5)' : 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

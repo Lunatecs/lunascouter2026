@@ -26,7 +26,7 @@ export default function ScoutingForm({
   })
   
   const [autoFuelCollected, setAutoFuelCollected] = useState('None')
-  const [autoPosition, setAutoPosition] = useState('')
+  const [autoPosition, setAutoPosition] = useState(0)
   const [autoLevel, setAutoLevel] = useState(0)
   const [movedFromStart, setMovedFromStart] = useState(false)
   const [autoScoredZeroFuel, setAutoScoredZeroFuel] = useState(true)
@@ -58,7 +58,7 @@ export default function ScoutingForm({
   useEffect(() => {
     const isDirty = 
       selectedTeam !== null ||
-      autoPosition !== '' ||
+      autoPosition !== 0 ||
       autoFuelCollected !== 'None' ||
       autoLevel !== 0 ||
       teleopLevel !== 0 ||
@@ -133,7 +133,7 @@ export default function ScoutingForm({
     // Clear match-specific fields
     setSelectedTeam(null)
     setAutoLevel(0)
-    setAutoPosition('')
+    setAutoPosition(0)
     setAutoFuelCollected('None')
     setTeleopLevel(0)
     setTeleopNote('')
@@ -210,7 +210,7 @@ export default function ScoutingForm({
                   </span>
                 </div>
                 <div className="level-buttons" style={{gap:8}}>
-                  {['1','2','3','4'].map(pos => (
+                  {[1, 2, 3, 4].map(pos => (
                     <button key={pos} className={`level-button ${autoPosition===pos? 'selected':''}`} style={{flex:1, minWidth:0, padding:'12px 0'}} onClick={() => { setAutoPosition(pos); trigger('selection'); }}>{pos}</button>
                   ))}
                 </div>
@@ -375,7 +375,7 @@ export default function ScoutingForm({
       <FieldSelectionModal
         show={showFieldModal}
         onClose={() => setShowFieldModal(false)}
-        onSelect={setAutoPosition}
+        onSelect={(pos) => setAutoPosition(Number(pos))}
         selectedPos={autoPosition}
         trigger={trigger}
       />
