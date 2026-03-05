@@ -220,16 +220,27 @@ export default function ScoutingForm({
               <div style={{marginTop:12}}>
                 <div style={{fontWeight:700, marginBottom:8}}>Fuel Collected From</div>
                 <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
-                  {['Center Area', 'Human Player', 'Depot'].map(loc => (
-                    <button 
-                      key={loc} 
-                      className={`btn small ${autoFuelCollected===loc?'selected':''}`} 
-                      style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
-                      onClick={() => { setAutoFuelCollected(loc); trigger('selection'); }}
-                    >
-                      {loc}
-                    </button>
-                  ))}
+                  <button 
+                    className={`btn small ${autoFuelCollected==='Center Area'?'selected':''}`} 
+                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
+                    onClick={() => { setAutoFuelCollected('Center Area'); trigger('selection'); }}
+                  >
+                    Center Area
+                  </button>
+                  <button 
+                    className={`btn small ${autoFuelCollected==='Human Player'?'selected':''}`} 
+                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
+                    onClick={() => { setAutoFuelCollected('Human Player'); trigger('selection'); }}
+                  >
+                    Human Player
+                  </button>
+                  <button 
+                    className={`btn small ${autoFuelCollected==='Depot'?'selected':''}`} 
+                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
+                    onClick={() => { setAutoFuelCollected('Depot'); trigger('selection'); }}
+                  >
+                    Depot
+                  </button>
                   <button 
                     className={`btn small ${autoFuelCollected==='None'?'selected':''}`} 
                     style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
