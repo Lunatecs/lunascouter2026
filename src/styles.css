@@ -177,6 +177,14 @@ html, body, #root {background-color:var(--bg-black) !important; color:var(--text
 
 .btn.small.selected{background:linear-gradient(180deg, rgba(var(--accent-rgb),0.14), rgba(var(--accent-2-rgb),0.08));border-color:rgba(var(--accent-2-rgb),0.08);color:var(--text)}
 
+.btn-multiline {
+  flex: 1;
+  height: auto;
+  min-height: 40px;
+  white-space: normal;
+  line-height: 1.2;
+}
+
 /* Team select */
 .team-select option{background:var(--card);color:#ffffff}
 

@@ -205,15 +205,15 @@ export default function ScoutingForm({
 
               <div className="row small-row" style={{marginTop:12}}>
                 <div style={{display:'flex', gap:8, width:'100%'}}>
-                  <button className={`btn small yes-btn ${movedFromStart===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2'}} onClick={() => { setMovedFromStart(true); trigger('selection'); }}>Moved from Start</button>
-                  <button className={`btn small no-btn ${movedFromStart===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2'}} onClick={() => { setMovedFromStart(false); trigger('selection'); }}>Didn't Move</button>
+                  <button className={`btn small yes-btn btn-multiline ${movedFromStart===true?'selected':''}`} onClick={() => { setMovedFromStart(true); trigger('selection'); }}>Moved from Start</button>
+                  <button className={`btn small no-btn btn-multiline ${movedFromStart===false?'selected':''}`} onClick={() => { setMovedFromStart(false); trigger('selection'); }}>Didn't Move</button>
                 </div>
               </div>
 
               <div className="row small-row" style={{marginTop:8}}>
                 <div style={{display:'flex', gap:8, width:'100%'}}>
-                  <button className={`btn small no-btn ${autoScoredZeroFuel===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2'}} onClick={() => { setAutoScoredZeroFuel(true); trigger('selection'); }}>Zero Fuel</button>
-                  <button className={`btn small yes-btn ${autoScoredZeroFuel===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2'}} onClick={() => { setAutoScoredZeroFuel(false); trigger('selection'); }}>Scored Fuel</button>
+                  <button className={`btn small no-btn btn-multiline ${autoScoredZeroFuel===true?'selected':''}`} onClick={() => { setAutoScoredZeroFuel(true); trigger('selection'); }}>Zero Fuel</button>
+                  <button className={`btn small yes-btn btn-multiline ${autoScoredZeroFuel===false?'selected':''}`} onClick={() => { setAutoScoredZeroFuel(false); trigger('selection'); }}>Scored Fuel</button>
                 </div>
               </div>
 
