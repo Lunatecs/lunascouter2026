@@ -1,28 +1,29 @@
 import React from 'react'
 
-export default function FieldSelectionModal({ show, onClose, onSelect, selectedPos }) {
+export default function FieldSelectionModal({ show, onClose, onSelect, selectedPos, trigger }) {
   if (!show) return null
 
   const positions = ['1', '2', '3', '4']
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%' }}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '1000px', width: '95%' }}>
         <h3 style={{ marginTop: 0 }}>Select Starting Position</h3>
-        <div className="field-container" style={{ position: 'relative', width: '100%', aspectRatio: '3/2', overflow: 'hidden', borderRadius: '8px', background: '#222' }}>
-          <img src="field.png" alt="Field Map" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+        <div className="field-container" style={{ position: 'relative', width: '100%', aspectRatio: '1330/661', overflow: 'hidden', borderRadius: '8px', background: '#222' }}>
+          <img src="field.jpg" alt="Field Map" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.9 }} />
           
           <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
             {positions.map(pos => (
               <div
                 key={pos}
                 onClick={() => {
+                  if (trigger) trigger('selection')
                   onSelect(pos)
                   onClose()
                 }}
                 style={{
                   flex: 1,
-                  borderRight: pos !== '4' ? '2px dashed rgba(255,255,255,0.3)' : 'none',
+                  borderRight: pos !== '4' ? '2px dashed rgba(0,0,0,0.5)' : 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

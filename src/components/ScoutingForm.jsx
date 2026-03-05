@@ -219,35 +219,17 @@ export default function ScoutingForm({
 
               <div style={{marginTop:12}}>
                 <div style={{fontWeight:700, marginBottom:8}}>Fuel Collected From</div>
-                <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
-                  <button 
-                    className={`btn small ${autoFuelCollected==='Center Area'?'selected':''}`} 
-                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
-                    onClick={() => { setAutoFuelCollected('Center Area'); trigger('selection'); }}
-                  >
-                    Center Area
-                  </button>
-                  <button 
-                    className={`btn small ${autoFuelCollected==='Human Player'?'selected':''}`} 
-                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
-                    onClick={() => { setAutoFuelCollected('Human Player'); trigger('selection'); }}
-                  >
-                    Human Player
-                  </button>
-                  <button 
-                    className={`btn small ${autoFuelCollected==='Depot'?'selected':''}`} 
-                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
-                    onClick={() => { setAutoFuelCollected('Depot'); trigger('selection'); }}
-                  >
-                    Depot
-                  </button>
-                  <button 
-                    className={`btn small ${autoFuelCollected==='None'?'selected':''}`} 
-                    style={{flex:'1 1 auto', height:'auto', minHeight:'40px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px'}} 
-                    onClick={() => { setAutoFuelCollected('None'); trigger('selection'); }}
-                  >
-                    None
-                  </button>
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8}}>
+                  {['Center Area', 'Human Player', 'Depot', 'None'].map(loc => (
+                    <button 
+                      key={loc} 
+                      className={`btn small btn-multiline ${autoFuelCollected===loc?'selected':''}`} 
+                      style={{padding:'8px'}} 
+                      onClick={() => { setAutoFuelCollected(loc); trigger('selection'); }}
+                    >
+                      {loc}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -269,35 +251,35 @@ export default function ScoutingForm({
             <div className="module-title">Teleop</div>
             <div className="teleop-content">
               <div className="top-controls" style={{display:'flex',flexDirection:'column',gap:16,height:'100%'}}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',columnGap:24, rowGap:20}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',columnGap:24, rowGap:12}}>
                   <div>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className={`btn small yes-btn ${defense===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setDefense(true); trigger('selection'); }}>Played Defense</button>
-                      <button className={`btn small no-btn ${defense===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setDefense(false); trigger('selection'); }}>No Defense</button>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button className={`btn small yes-btn btn-multiline ${defense===true?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setDefense(true); trigger('selection'); }}>Played Defense</button>
+                      <button className={`btn small no-btn btn-multiline ${defense===false?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setDefense(false); trigger('selection'); }}>No Defense</button>
                     </div>
                   </div>
                   <div>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className={`btn small yes-btn ${teleopScoredZeroFuel===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setTeleopScoredZeroFuel(true); trigger('selection'); }}>Scored Fuel</button>
-                      <button className={`btn small no-btn ${teleopScoredZeroFuel===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setTeleopScoredZeroFuel(false); trigger('selection'); }}>Zero Fuel</button>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button className={`btn small yes-btn btn-multiline ${teleopScoredZeroFuel===true?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setTeleopScoredZeroFuel(true); trigger('selection'); }}>Scored Fuel</button>
+                      <button className={`btn small no-btn btn-multiline ${teleopScoredZeroFuel===false?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setTeleopScoredZeroFuel(false); trigger('selection'); }}>Zero Fuel</button>
                     </div>
                   </div>
                   <div>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className={`btn small no-btn ${brokeDown===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setBrokeDown(true); trigger('selection'); }}>Robot Broke Down</button>
-                      <button className={`btn small yes-btn ${brokeDown===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setBrokeDown(false); trigger('selection'); }}>Robot has no issues</button>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button className={`btn small no-btn btn-multiline ${brokeDown===true?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setBrokeDown(true); trigger('selection'); }}>Robot Broke Down</button>
+                      <button className={`btn small yes-btn btn-multiline ${brokeDown===false?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setBrokeDown(false); trigger('selection'); }}>Robot has no issues</button>
                     </div>
                   </div>
                   <div>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className={`btn small yes-btn ${relayedFuel===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setRelayedFuel(true); trigger('selection'); }}>Transported Fuel</button>
-                      <button className={`btn small no-btn ${relayedFuel===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setRelayedFuel(false); trigger('selection'); }}>No Fuel Relay</button>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button className={`btn small yes-btn btn-multiline ${relayedFuel===true?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setRelayedFuel(true); trigger('selection'); }}>Transported Fuel</button>
+                      <button className={`btn small no-btn btn-multiline ${relayedFuel===false?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setRelayedFuel(false); trigger('selection'); }}>No Fuel Relay</button>
                     </div>
                   </div>
                   <div>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className={`btn small no-btn ${needsAttention===true?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setNeedsAttention(true); trigger('selection'); }}>Needs Match Review</button>
-                      <button className={`btn small yes-btn ${needsAttention===false?'selected':''}`} style={{flex:1, height:'auto', minHeight:'44px', whiteSpace:'normal', lineHeight:'1.2', padding:'8px 4px'}} onClick={() => { setNeedsAttention(false); trigger('selection'); }}>Good Scouting</button>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button className={`btn small no-btn btn-multiline ${needsAttention===true?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setNeedsAttention(true); trigger('selection'); }}>Needs Match Review</button>
+                      <button className={`btn small yes-btn btn-multiline ${needsAttention===false?'selected':''}`} style={{padding:'8px 4px'}} onClick={() => { setNeedsAttention(false); trigger('selection'); }}>Good Scouting</button>
                     </div>
                   </div>
                 </div>
@@ -340,6 +322,7 @@ export default function ScoutingForm({
         onClose={() => setShowFieldModal(false)}
         onSelect={setAutoPosition}
         selectedPos={autoPosition}
+        trigger={trigger}
       />
     </section>
   )
