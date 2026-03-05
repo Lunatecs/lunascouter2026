@@ -8,7 +8,8 @@ export default function DataManager({
   onCreatePackage,
   onDeleteArchive,
   onExportArchiveJSON,
-  onExportArchiveCSV
+  onExportArchiveCSV,
+  onTransmitPackage
 }) {
   const [editingNoteIndex, setEditingNoteIndex] = useState(null)
   const [editingNoteContent, setEditingNoteContent] = useState('')
@@ -188,6 +189,7 @@ export default function DataManager({
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn small" onClick={() => onExportArchiveJSON(session)}>JSON</button>
                   <button className="btn small" onClick={() => onExportArchiveCSV(session)}>CSV</button>
+                  <button className="btn small" onClick={() => onTransmitPackage(session)}>Transmit</button>
                   <button className="delete-btn" style={{marginLeft:8}} onClick={() => onDeleteArchive(session.id)}>Delete</button>
                 </div>
               </div>

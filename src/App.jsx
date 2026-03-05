@@ -13,6 +13,7 @@ import AllianceSelectionModal from './components/Modals/AllianceSelectionModal'
 import QRCodeModal from './components/Modals/QRCodeModal'
 import DeletePackageModal from './components/Modals/DeletePackageModal'
 import PackageCreatedModal from './components/Modals/PackageCreatedModal'
+import BluetoothModal from './components/Modals/BluetoothModal'
 
 export default function App() {
   const { trigger } = useWebHaptics({ debug: true });
@@ -92,6 +93,8 @@ export default function App() {
   const [qrBaseUrl, setQrBaseUrl] = useState('')
   const [qrPayload, setQrPayload] = useState('')
   const [showPackageModal, setShowPackageModal] = useState(false)
+  const [showBluetoothModal, setShowBluetoothModal] = useState(false)
+  const [bluetoothData, setBluetoothData] = useState(null)
   const [packageToDelete, setPackageToDelete] = useState(null)
 
   // Data State
@@ -280,6 +283,31 @@ export default function App() {
     a.href = url; a.download = `archive_${session.id}.csv`; a.click(); URL.revokeObjectURL(url)
   }
 
+  const handleTransmitPackage = (session) => {
+    const payload = session.data.map(r => {
+      // Handle new schema
+      if (r.values) {
+        // Find team name if possible
+        const teamObj = teams.find(t => t.number === r.team) || {}
+        return {
+          ...r,
+          teamName: teamObj.name || 'Unnamed'
+        }
+      }
+      
+      // Handle old schema
+      const team = teams[r.teamIndex] || {}
+      return {
+        ...r,
+        teamName: team.name || 'Unnamed',
+        teamNumber: team.number || '-'
+      }
+    })
+    
+    setBluetoothData(payload)
+    setShowBluetoothModal(true)
+  }
+
   const handleTabChange = (newTab) => {
     if (active === 'scout' && newTab !== 'scout' && isScoutingDirty) {
       toast.warn(
@@ -353,6 +381,7 @@ export default function App() {
               onDeleteArchive={deleteArchiveSession}
               onExportArchiveJSON={exportArchiveJSON}
               onExportArchiveCSV={exportArchiveCSV}
+              onTransmitPackage={handleTransmitPackage}
             />
           )}
 
@@ -390,6 +419,12 @@ export default function App() {
         <AllianceSelectionModal 
             show={showAllianceModal} 
             onSelect={handleAllianceSelect} 
+        />
+
+        <BluetoothModal
+            show={showBluetoothModal}
+            onClose={() => setShowBluetoothModal(false)}
+            data={bluetoothData}
         />
       </div>
     </>
