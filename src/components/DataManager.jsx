@@ -34,6 +34,7 @@ export default function DataManager() {
       baseUrl: '',
       settings: { title:'', message:'', includeUrl:false }
   })
+  const [createdSession, setCreatedSession] = useState(null)
 
   const [confirmModal, setConfirmModal] = useState({
     show: false,
@@ -55,6 +56,7 @@ export default function DataManager() {
     }
     addArchive(session)
     clearRecords()
+    setCreatedSession(session)
     setShowPackageModal(true)
     trigger('success')
   }
@@ -182,6 +184,13 @@ export default function DataManager() {
       <PackageCreatedModal 
         show={showPackageModal} 
         onClose={() => setShowPackageModal(false)}
+        onShowQR={() => {
+            setShowPackageModal(false)
+            if (createdSession) {
+                // The onExportArchiveQR expects the session object, which it stringifies
+                onExportArchiveQR(createdSession)
+            }
+        }}
       />
 
       <QRCodeModal 
