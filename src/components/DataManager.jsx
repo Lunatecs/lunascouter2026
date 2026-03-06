@@ -1,30 +1,40 @@
 import React, { useState } from 'react'
 import { useStore } from '../store'
-import ConfirmationModal from './Modals/ConfirmationModal'
+import { v4 as uuidv4 } from 'uuid'
+import { toCSV } from '../utils/csvHelpers'
+import { useWebHaptics } from 'web-haptics/react'
 
-export default function DataManager({
-  onCreatePackage,
-  onDeleteArchive,
-  onExportArchiveJSON,
-  onExportArchiveCSV,
-  onExportArchiveQR
-}) {
+import ConfirmationModal from './Modals/ConfirmationModal'
+import PackageCreatedModal from './Modals/PackageCreatedModal'
+import QRCodeModal from './Modals/QRCodeModal'
+
+export default function DataManager() {
+  const { trigger } = useWebHaptics({ debug: true })
+  
   const records = useStore(state => state.records)
   const setRecords = useStore(state => state.setRecords)
   const archives = useStore(state => state.archives)
   const teams = useStore(state => state.teams)
   
-  // Also grab specific actions if needed, though setRecords covers bulk updates
-  // But using toggleRecordDiscard is cleaner
   const toggleRecordDiscard = useStore(state => state.toggleRecordDiscard)
   const updateRecordNote = useStore(state => state.updateRecordNote)
   const clearRecords = useStore(state => state.clearRecords)
+  const addArchive = useStore(state => state.addArchive)
   const deleteArchive = useStore(state => state.deleteArchive)
 
   const [editingNoteIndex, setEditingNoteIndex] = useState(null)
   const [editingNoteContent, setEditingNoteContent] = useState('')
   const [activeMenuId, setActiveMenuId] = useState(null)
   
+  // Modal States
+  const [showPackageModal, setShowPackageModal] = useState(false)
+  const [qrState, setQrState] = useState({
+      show: false,
+      payload: '',
+      baseUrl: '',
+      settings: { title:'', message:'', includeUrl:false }
+  })
+
   const [confirmModal, setConfirmModal] = useState({
     show: false,
     title: '',
@@ -36,6 +46,60 @@ export default function DataManager({
 
   const closeConfirm = () => setConfirmModal(prev => ({ ...prev, show: false }))
 
+  // Actions
+  const onCreatePackage = () => {
+    const session = {
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      data: [...records]
+    }
+    addArchive(session)
+    clearRecords()
+    setShowPackageModal(true)
+    trigger('success')
+  }
+
+  const onExportArchiveJSON = (session) => {
+    const dataStr = JSON.stringify(session, null, 2)
+    const blob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `archive_${session.id}.json`; a.click(); URL.revokeObjectURL(url)
+  }
+
+  const onExportArchiveCSV = (session) => {
+    const csv = toCSV(session.data, teams)
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `archive_${session.id}.csv`; a.click(); URL.revokeObjectURL(url)
+  }
+
+  const onExportArchiveQR = (payload) => {
+    try {
+      const jsonStr = JSON.stringify(payload)
+      const encoder = new TextEncoder()
+      const data = encoder.encode(jsonStr)
+      const binString = Array.from(data, (byte) => String.fromCodePoint(byte)).join('')
+      const b64 = btoa(binString)
+      
+      setQrState({
+          show: true,
+          payload: b64,
+          baseUrl: `${window.location.origin}${window.location.pathname}`,
+          settings: {
+            title: 'Package Data QR',
+            message: 'Scan this code to transmit package data.',
+            includeUrl: false
+          }
+      })
+    } catch (e) {
+      console.error(e)
+      alert('Failed to generate QR code: ' + e.message)
+    }
+  }
+
+  // Handlers
   const handleClearSession = () => {
     if (records.length === 0) return
     
@@ -88,6 +152,21 @@ export default function DataManager({
     })
   }
 
+  const handleDeleteArchive = (id) => {
+      setConfirmModal({
+          show: true,
+          title: 'Delete Package?',
+          message: 'Are you sure you want to PERMANENTLY delete this package?\n\nThis action cannot be undone and all records within it will be lost forever.',
+          confirmLabel: 'Yes, Delete Permanently',
+          isDanger: true,
+          onConfirm: () => {
+              deleteArchive(id)
+              setActiveMenuId(null)
+              closeConfirm()
+          }
+      })
+  }
+
   return (
     <section className={`panel full data-area`}>
       <ConfirmationModal 
@@ -99,6 +178,22 @@ export default function DataManager({
         isDanger={confirmModal.isDanger}
         confirmLabel={confirmModal.confirmLabel}
       />
+      
+      <PackageCreatedModal 
+        show={showPackageModal} 
+        onClose={() => setShowPackageModal(false)}
+      />
+
+      <QRCodeModal 
+        show={qrState.show} 
+        onClose={() => setQrState(prev => ({ ...prev, show: false }))}
+        payload={qrState.payload}
+        initialBaseUrl={qrState.baseUrl}
+        title={qrState.settings.title}
+        message={qrState.settings.message}
+        includeUrl={qrState.settings.includeUrl}
+      />
+
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
         <h2 style={{margin:0}}>Saved Records ({records.length})</h2>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
@@ -339,7 +434,7 @@ export default function DataManager({
                                     cursor: 'pointer',
                                     fontSize: 14
                                 }}
-                                onClick={() => { onDeleteArchive(session.id); setActiveMenuId(null); }}
+                                onClick={() => { handleDeleteArchive(session.id); }}
                             >
                                 Delete
                             </button>

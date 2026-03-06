@@ -3,8 +3,6 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useWebHaptics } from 'web-haptics/react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { toCSV } from './utils/csvHelpers'
-import { v4 as uuidv4 } from 'uuid'
 import { useStore } from './store'
 
 // Components
@@ -13,8 +11,6 @@ import ScoutingForm from './components/ScoutingForm'
 import DataManager from './components/DataManager'
 import AllianceSelectionModal from './components/Modals/AllianceSelectionModal'
 import QRCodeModal from './components/Modals/QRCodeModal'
-import DeletePackageModal from './components/Modals/DeletePackageModal'
-import PackageCreatedModal from './components/Modals/PackageCreatedModal'
 
 export default function App() {
   const { trigger } = useWebHaptics({ debug: true });
@@ -76,13 +72,6 @@ export default function App() {
   // Global State from Zustand
   const teams = useStore(state => state.teams)
   const setTeams = useStore(state => state.setTeams)
-  const records = useStore(state => state.records)
-  const setRecords = useStore(state => state.setRecords)
-  const clearRecords = useStore(state => state.clearRecords)
-  const archives = useStore(state => state.archives)
-  const setArchives = useStore(state => state.setArchives)
-  const addArchive = useStore(state => state.addArchive)
-  const deleteArchive = useStore(state => state.deleteArchive)
   const allianceSelection = useStore(state => state.allianceSelection)
   const setAllianceSelection = useStore(state => state.setAllianceSelection)
 
@@ -100,8 +89,6 @@ export default function App() {
     message: 'Scan this code with another device to import the team list.',
     includeUrl: true
   })
-  const [showPackageModal, setShowPackageModal] = useState(false)
-  const [packageToDelete, setPackageToDelete] = useState(null)
 
   // Initial Alliance Check
   useEffect(() => {
@@ -181,68 +168,6 @@ export default function App() {
       setShowAllianceModal(false)
   }
 
-  const createPackage = () => {
-    if (records.length === 0) return
-    
-    const session = {
-      id: uuidv4(),
-      timestamp: new Date().toISOString(),
-      data: [...records]
-    }
-    addArchive(session)
-    clearRecords()
-    setShowPackageModal(true)
-    trigger('success')
-  }
-
-  const deleteArchiveSession = (id) => {
-      setPackageToDelete(id)
-  }
-  
-  const confirmDeletePackage = () => {
-    deleteArchive(packageToDelete)
-    setPackageToDelete(null)
-  }
-
-  const exportArchiveJSON = (session) => {
-    const dataStr = JSON.stringify(session, null, 2)
-    const blob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `archive_${session.id}.json`; a.click(); URL.revokeObjectURL(url)
-  }
-
-  const exportArchiveCSV = (session) => {
-    const csv = toCSV(session.data, teams)
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `archive_${session.id}.csv`; a.click(); URL.revokeObjectURL(url)
-  }
-
-  const handleSharePackage = (payload) => {
-    try {
-      const jsonStr = JSON.stringify(payload)
-      // Safe Base64 encoding for UTF-8 using Uint8Array
-      const encoder = new TextEncoder()
-      const data = encoder.encode(jsonStr)
-      // Convert Uint8Array to binary string
-      const binString = Array.from(data, (byte) => String.fromCodePoint(byte)).join('')
-      const b64 = btoa(binString)
-      
-      setQrPayload(b64)
-      setQrSettings({
-        title: 'Package Data QR',
-        message: 'Scan this code to transmit package data.',
-        includeUrl: false
-      })
-      setShowQRModal(true)
-    } catch (e) {
-      console.error(e)
-      alert('Failed to generate QR code: ' + e.message)
-    }
-  }
-
   const handleTabChange = (newTab) => {
     if (active === 'scout' && newTab !== 'scout' && isScoutingDirty) {
       toast.warn(
@@ -305,13 +230,7 @@ export default function App() {
           )}
 
           {active === 'sync' && (
-            <DataManager 
-              onCreatePackage={createPackage}
-              onDeleteArchive={deleteArchiveSession}
-              onExportArchiveJSON={exportArchiveJSON}
-              onExportArchiveCSV={exportArchiveCSV}
-              onExportArchiveQR={handleSharePackage}
-            />
+            <DataManager />
           )}
 
           {active === 'setup' && (
@@ -330,17 +249,6 @@ export default function App() {
             title={qrSettings.title}
             message={qrSettings.message}
             includeUrl={qrSettings.includeUrl}
-        />
-
-        <DeletePackageModal 
-            show={packageToDelete !== null} 
-            onCancel={() => setPackageToDelete(null)}
-            onConfirm={confirmDeletePackage}
-        />
-
-        <PackageCreatedModal 
-            show={showPackageModal} 
-            onClose={() => setShowPackageModal(false)}
         />
 
         <AllianceSelectionModal 
