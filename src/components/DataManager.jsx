@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../store'
+import ConfirmationModal from './Modals/ConfirmationModal'
 
 export default function DataManager({
   onCreatePackage,
@@ -17,16 +18,94 @@ export default function DataManager({
   // But using toggleRecordDiscard is cleaner
   const toggleRecordDiscard = useStore(state => state.toggleRecordDiscard)
   const updateRecordNote = useStore(state => state.updateRecordNote)
+  const clearRecords = useStore(state => state.clearRecords)
+  const deleteArchive = useStore(state => state.deleteArchive)
 
   const [editingNoteIndex, setEditingNoteIndex] = useState(null)
   const [editingNoteContent, setEditingNoteContent] = useState('')
+  const [activeMenuId, setActiveMenuId] = useState(null)
+  
+  const [confirmModal, setConfirmModal] = useState({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    isDanger: false,
+    confirmLabel: 'Confirm'
+  })
+
+  const closeConfirm = () => setConfirmModal(prev => ({ ...prev, show: false }))
+
+  const handleClearSession = () => {
+    if (records.length === 0) return
+    
+    setConfirmModal({
+        show: true,
+        title: 'Discard Session?',
+        message: 'Are you sure you want to discard the current session records?\n\nThis action cannot be undone.',
+        confirmLabel: 'Discard Records',
+        isDanger: true,
+        onConfirm: () => {
+            clearRecords()
+            closeConfirm()
+        }
+    })
+  }
+
+  const handleLoadArchive = (session) => {
+    const hasRecords = records.length > 0;
+    
+    setConfirmModal({
+        show: true,
+        title: hasRecords ? 'Replace Current Session?' : 'Load Archive?',
+        message: hasRecords 
+            ? 'Warning: You have active records. Loading this archive will REPLACE them.\n\nThis action will also REMOVE this archive package to prevent duplication.'
+            : 'Load this archive? This will move records to your active session and REMOVE this archive package.',
+        confirmLabel: 'Load Archive',
+        isDanger: hasRecords,
+        onConfirm: () => {
+            setRecords(session.data || [])
+            deleteArchive(session.id)
+            setActiveMenuId(null)
+            closeConfirm()
+        }
+    })
+  }
+
+  const handleCreatePackage = () => {
+    if (records.length === 0) return
+    
+    setConfirmModal({
+        show: true,
+        title: 'Create Package?',
+        message: 'Create a package from current records?\n\nThis will archive the current data and clear the view.',
+        confirmLabel: 'Create Package',
+        isDanger: false,
+        onConfirm: () => {
+            onCreatePackage()
+            closeConfirm()
+        }
+    })
+  }
 
   return (
     <section className={`panel full data-area`}>
+      <ConfirmationModal 
+        show={confirmModal.show}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirm}
+        isDanger={confirmModal.isDanger}
+        confirmLabel={confirmModal.confirmLabel}
+      />
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:16}}>
         <h2 style={{margin:0}}>Saved Records ({records.length})</h2>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <button className="btn small" onClick={onCreatePackage} style={{borderColor:'rgba(255,255,255,0.2)'}}>Create Package</button>
+          {records.length > 0 && (
+            <button className="btn small" onClick={handleClearSession} style={{background:'transparent', borderColor:'rgba(255,80,80,0.5)', color:'#ffb3b3'}}>Discard Session</button>
+          )}
+          <button className="btn small" onClick={handleCreatePackage} style={{borderColor:'rgba(255,255,255,0.2)'}}>Create Package</button>
         </div>
       </div>
 
@@ -176,9 +255,97 @@ export default function DataManager({
                 </div>
                 <div style={{display:'flex',gap:8, alignItems:'center'}}>
                   <button className="btn small" onClick={() => onExportArchiveQR(session)}>QR</button>
-                  <button className="btn small" onClick={() => onExportArchiveJSON(session)}>JSON</button>
-                  <button className="btn small" onClick={() => onExportArchiveCSV(session)}>CSV</button>
-                  <button className="delete-btn" style={{marginLeft:8}} onClick={() => onDeleteArchive(session.id)}>Delete</button>
+                  
+                  <div style={{position: 'relative'}}>
+                    <button 
+                        className="btn small" 
+                        style={{padding: '0 8px', fontSize: '18px', lineHeight: '1', height: '32px', minWidth: '32px'}}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveMenuId(activeMenuId === session.id ? null : session.id)
+                        }}
+                    >
+                        ⋮
+                    </button>
+                    
+                    {activeMenuId === session.id && (
+                        <div style={{
+                            position: 'absolute', 
+                            right: 0, 
+                            top: '100%', 
+                            marginTop: 4,
+                            zIndex: 100, 
+                            background: '#2a2a2a', 
+                            border: '1px solid #444', 
+                            borderRadius: 8,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minWidth: 140,
+                            overflow: 'hidden'
+                        }}>
+                            <button 
+                                style={{
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    padding: '12px 16px', 
+                                    textAlign: 'left', 
+                                    color: 'white', 
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #333',
+                                    fontSize: 14
+                                }}
+                                onClick={() => handleLoadArchive(session)}
+                            >
+                                Load
+                            </button>
+                            <button 
+                                style={{
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    padding: '12px 16px', 
+                                    textAlign: 'left', 
+                                    color: 'white', 
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #333',
+                                    fontSize: 14
+                                }}
+                                onClick={() => { onExportArchiveJSON(session); setActiveMenuId(null); }}
+                            >
+                                Export JSON
+                            </button>
+                            <button 
+                                style={{
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    padding: '12px 16px', 
+                                    textAlign: 'left', 
+                                    color: 'white', 
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #333',
+                                    fontSize: 14
+                                }}
+                                onClick={() => { onExportArchiveCSV(session); setActiveMenuId(null); }}
+                            >
+                                Export CSV
+                            </button>
+                            <button 
+                                style={{
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    padding: '12px 16px', 
+                                    textAlign: 'left', 
+                                    color: '#ff6b6b', 
+                                    cursor: 'pointer',
+                                    fontSize: 14
+                                }}
+                                onClick={() => { onDeleteArchive(session.id); setActiveMenuId(null); }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

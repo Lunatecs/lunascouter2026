@@ -183,7 +183,6 @@ export default function App() {
 
   const createPackage = () => {
     if (records.length === 0) return
-    if (!window.confirm('Create a package from current records? This will clear the current data view.')) return
     
     const session = {
       id: uuidv4(),
