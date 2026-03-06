@@ -4,6 +4,7 @@ import { useWebHaptics } from 'web-haptics/react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { toCSV } from './utils/csvHelpers'
+import { v4 as uuidv4 } from 'uuid'
 
 // Components
 import SetupPanel from './components/SetupPanel'
@@ -236,7 +237,7 @@ export default function App() {
     if (!window.confirm('Create a package from current records? This will clear the current data view.')) return
     
     const session = {
-      id: Date.now(),
+      id: uuidv4(),
       timestamp: new Date().toISOString(),
       data: [...records]
     }
