@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useStore } from '../store'
 import { v4 as uuidv4 } from 'uuid'
+import pako from 'pako'
 import { toCSV } from '../utils/csvHelpers'
+import { getLocalStorageUsage, formatBytes, LOCAL_STORAGE_LIMIT } from '../utils/storageUtils'
 import { useWebHaptics } from 'web-haptics/react'
 
 import ConfirmationModal from './Modals/ConfirmationModal'
@@ -47,6 +49,17 @@ export default function DataManager() {
 
   const closeConfirm = () => setConfirmModal(prev => ({ ...prev, show: false }))
 
+  // Storage Quota
+  const [storageUsage, setStorageUsage] = useState(0)
+  
+  useEffect(() => {
+    setStorageUsage(getLocalStorageUsage())
+    const interval = setInterval(() => {
+        setStorageUsage(getLocalStorageUsage())
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [records, archives])
+
   // Actions
   const onCreatePackage = () => {
     const session = {
@@ -80,18 +93,22 @@ export default function DataManager() {
   const onExportArchiveQR = (payload) => {
     try {
       const jsonStr = JSON.stringify(payload)
-      const encoder = new TextEncoder()
-      const data = encoder.encode(jsonStr)
-      const binString = Array.from(data, (byte) => String.fromCodePoint(byte)).join('')
+      const compressed = pako.deflate(jsonStr)
+      const binString = Array.from(compressed, (byte) => String.fromCodePoint(byte)).join('')
       const b64 = btoa(binString)
       
+      if (b64.length > 2953) {
+          alert(`Warning: Data size (${b64.length} chars) exceeds QR code capacity (~2953 chars).\n\nPlease use the "Split Package" option in the menu or export as JSON.`)
+          return
+      }
+
       setQrState({
           show: true,
           payload: b64,
           baseUrl: `${window.location.origin}${window.location.pathname}`,
           settings: {
             title: 'Package Data QR',
-            message: 'Scan this code to transmit package data.',
+            message: 'Scan this code to transmit package data (Compressed).',
             includeUrl: false
           }
       })
@@ -152,6 +169,57 @@ export default function DataManager() {
             closeConfirm()
         }
     })
+  }
+
+  const handleSplitArchive = (session) => {
+    const MAX_QR_SIZE = 2500;
+    const records = session.data;
+    const chunks = [];
+    let currentChunk = [];
+    
+    // Helper to estimate size
+    const estimateSize = (recs) => {
+        const tempSession = { ...session, data: recs, id: uuidv4() }; 
+        return JSON.stringify(tempSession).length;
+    };
+
+    for (const record of records) {
+        if (estimateSize([...currentChunk, record]) < MAX_QR_SIZE) {
+            currentChunk.push(record);
+        } else {
+            if (currentChunk.length === 0) {
+                // If a single record is huge, we have to keep it or it's lost
+                currentChunk.push(record);
+                chunks.push(currentChunk);
+                currentChunk = [];
+            } else {
+                chunks.push(currentChunk);
+                currentChunk = [record];
+            }
+        }
+    }
+    if (currentChunk.length > 0) chunks.push(currentChunk);
+
+    if (chunks.length <= 1) {
+        alert("This package is small enough and does not need splitting.");
+        setActiveMenuId(null);
+        return;
+    }
+
+    if (!window.confirm(`This will split the package into ${chunks.length} smaller packages for easier QR sharing. Continue?`)) return;
+
+    // Add chunks as new archives
+    chunks.reverse().forEach((chunkData, i) => {
+        const newSession = {
+            id: uuidv4(),
+            timestamp: new Date().toISOString(),
+            data: chunkData,
+        };
+        addArchive(newSession);
+    });
+    
+    trigger('success');
+    setActiveMenuId(null);
   }
 
   const handleDeleteArchive = (id) => {
@@ -439,6 +507,21 @@ export default function DataManager() {
                                     border: 'none', 
                                     padding: '12px 16px', 
                                     textAlign: 'left', 
+                                    color: 'white', 
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #333',
+                                    fontSize: 14
+                                }}
+                                onClick={() => handleSplitArchive(session)}
+                            >
+                                Split Package
+                            </button>
+                            <button 
+                                style={{
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    padding: '12px 16px', 
+                                    textAlign: 'left', 
                                     color: '#ff6b6b', 
                                     cursor: 'pointer',
                                     fontSize: 14
@@ -456,6 +539,28 @@ export default function DataManager() {
           </div>
         </div>
       )}
+
+      <div style={{marginTop: 32, padding: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 8}}>
+        <div style={{display:'flex', justifyContent:'space-between', marginBottom: 8, fontSize: 12, color: 'var(--muted)'}}>
+            <span>Storage Usage</span>
+            <span>{formatBytes(storageUsage)} / {formatBytes(LOCAL_STORAGE_LIMIT)}</span>
+        </div>
+        <div style={{height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden'}}>
+            <div 
+                style={{
+                    height: '100%', 
+                    width: `${Math.min((storageUsage / LOCAL_STORAGE_LIMIT) * 100, 100)}%`, 
+                    background: storageUsage > LOCAL_STORAGE_LIMIT * 0.9 ? '#ff4d4d' : storageUsage > LOCAL_STORAGE_LIMIT * 0.7 ? '#ffaa00' : '#4CAF50',
+                    transition: 'width 0.3s ease'
+                }} 
+            />
+        </div>
+        {storageUsage > LOCAL_STORAGE_LIMIT * 0.8 && (
+            <div style={{fontSize: 11, color: '#ffaa00', marginTop: 8}}>
+                ⚠️ You are running low on browser storage. Please export and delete old packages.
+            </div>
+        )}
+      </div>
     </section>
   )
 }
