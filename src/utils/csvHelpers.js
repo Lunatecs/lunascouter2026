@@ -46,7 +46,7 @@ export const toCSV = (arr, teams) => {
     'discarded'
   ]
   
-  const headers = ['team', 'matchNumber', 'position', 'scoutName', 'timestamp', ...valueKeys]
+  const headers = ['team', 'matchNumber', 'position', 'scoutName', 'timestamp', 'appVersion', ...valueKeys]
   const escape = (v) => '"' + String(v ?? '').replace(/"/g,'""') + '"'
   const headerRow = headers.join(',')
 
@@ -62,6 +62,7 @@ export const toCSV = (arr, teams) => {
         position: r.position,
         scoutName: r.scoutName,
         timestamp: r.timestamp,
+        appVersion: r.version || '',
         ...r.values,
         // Overwrite/Ensure top level fields if they exist there
         discarded: r.discarded ?? r.values.discarded
@@ -74,6 +75,7 @@ export const toCSV = (arr, teams) => {
         matchNumber: r.matchNumber,
         position: r.bannerColor ? (r.bannerColor === 'red' ? 'Red' : 'Blue') : '', // Approximation
         timestamp: r.timestamp,
+        appVersion: r.version || '',
         // Spread the rest of the flat properties
         ...r
       }

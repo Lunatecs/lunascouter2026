@@ -65,6 +65,7 @@ export default function DataManager() {
     const session = {
       id: uuidv4(),
       timestamp: new Date().toISOString(),
+      version: typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'unknown',
       data: [...records]
     }
     addArchive(session)
@@ -423,7 +424,10 @@ export default function DataManager() {
               <div key={session.id} className="record-row" style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px',borderRadius:12,background:'rgba(255,255,255,0.01)',border:'1px solid rgba(255,255,255,0.05)'}}>
                 <div>
                   <div style={{fontWeight:700,fontSize:15}}>Archive Session - {new Date(session.timestamp).toLocaleString()}</div>
-                  <div style={{color:'var(--muted)',fontSize:13,marginTop:4}}>{session.data.length} records in this session</div>
+                  <div style={{color:'var(--muted)',fontSize:13,marginTop:4}}>
+                    {session.data.length} records in this session
+                    {session.version && <span style={{marginLeft: 8, opacity: 0.5}}>• v{session.version}</span>}
+                  </div>
                 </div>
                 <div style={{display:'flex',gap:8, alignItems:'center'}}>
                   <button className="btn small" onClick={() => onExportArchiveQR(session)}>QR</button>

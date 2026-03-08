@@ -91,6 +91,7 @@ export default function ScoutingForm({
       position: allianceSelection, // e.g. "Red 1"
       scoutName: scoutName || '',
       timestamp: Date.now(),
+      version: typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'unknown',
       discarded: false,
       
       // Values object
